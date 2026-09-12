@@ -1,0 +1,31 @@
+{
+  "name": "ToneMark AI Cartoon Animation Studio",
+  "short_name": "ToneMark AI",
+  "description": "100% Cartoon Animated Marketing Reels & Mascot Rigging Studio with Firebase Cloud Sync",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d0417",
+  "theme_color": "#ff9900",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["multimedia", "graphics", "video", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Mascot Forge",
+      "url": "/#cartoon-rig-studio",
+      "description": "Open Cartoon Character Rigging Studio"
+    },
+    {
+      "name": "Reel Studio",
+      "url": "/#marketing-reel",
+      "description": "Create a 30s/60s/90s Cartoon Reel"
+    }
+  ]
+}

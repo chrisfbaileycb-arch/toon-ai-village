@@ -1,0 +1,6 @@
+{
+  "name": "ToneMark AI Animation Studio",
+  "description": "An all-in-one AI animation suite combining toon character scene editing, Gemini-powered 30s/60s/90s marketing reels, avatar cartoonizing, voice synthesis, and video export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

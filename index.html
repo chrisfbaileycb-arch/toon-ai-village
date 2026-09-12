@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>ToneMark AI Animation Studio</title>
+    <meta name="description" content="An all-in-one AI animation suite combining toon character scene editing, Gemini-powered 30s/60s/90s marketing reels, avatar cartoonizing, voice synthesis, and video export." />
+    <meta property="og:title" content="ToneMark AI Animation Studio" />
+    <meta property="og:description" content="An all-in-one AI animation suite combining toon character scene editing, Gemini-powered 30s/60s/90s marketing reels, avatar cartoonizing, voice synthesis, and video export." />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#ff9900" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ToneMark AI" />
+  </head>
+  <body class="bg-[#0d0417] text-zinc-100 antialiased overflow-x-hidden">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.log('SW registration note:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

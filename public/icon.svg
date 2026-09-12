@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1b0833"/>
+      <stop offset="50%" stop-color="#0d0417"/>
+      <stop offset="100%" stop-color="#2a0845"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff9900"/>
+      <stop offset="100%" stop-color="#ff4400"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#e2e8f0"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+  </defs>
+  <!-- Background with rounded PWA squircle -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect x="12" y="12" width="488" height="488" rx="100" fill="none" stroke="url(#gold)" stroke-width="6" opacity="0.6"/>
+
+  <!-- Glowing Aura -->
+  <circle cx="256" cy="256" r="160" fill="#ff9900" opacity="0.18"/>
+
+  <!-- Robot Mascot Head -->
+  <!-- Antenna -->
+  <line x1="256" y1="140" x2="256" y2="70" stroke="#ff9900" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="256" cy="60" r="22" fill="#ffea00" stroke="#ffffff" stroke-width="4"/>
+
+  <!-- Chassis Head -->
+  <rect x="136" y="140" width="240" height="190" rx="55" fill="url(#metal)" stroke="#1e293b" stroke-width="8"/>
+  <rect x="160" y="170" width="192" height="120" rx="35" fill="#090d16" stroke="#0284c7" stroke-width="5"/>
+
+  <!-- Glowing Cyan Optic Eyes -->
+  <ellipse cx="210" cy="225" rx="26" ry="32" fill="#38bdf8"/>
+  <circle cx="202" cy="214" r="10" fill="#ffffff"/>
+  <ellipse cx="302" cy="225" rx="26" ry="32" fill="#38bdf8"/>
+  <circle cx="294" cy="214" r="10" fill="#ffffff"/>
+
+  <!-- Smiling Visor Mouth -->
+  <path d="M 226 264 Q 256 288 286 264" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" fill="none"/>
+
+  <!-- Floating Star Badges -->
+  <polygon points="100,220 108,245 132,250 108,255 100,280 92,255 68,250 92,245" fill="#ffcc00"/>
+  <polygon points="412,200 418,220 438,224 418,228 412,248 406,228 386,224 406,220" fill="#ff007f"/>
+</svg>
