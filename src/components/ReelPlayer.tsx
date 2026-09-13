@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Play,
   Pause,
@@ -21,6 +21,7 @@ import { playVoiceover, stopVoiceover, generateSRT } from '../lib/audioService';
 import { exportReelToVideo, ExportProgress } from '../lib/videoExporter';
 import ToonCharacter from './ToonCharacter';
 import VectorCartoonRig from './VectorCartoonRig';
+import FreemiumWatermark from './FreemiumWatermark';
 
 interface ReelPlayerProps {
   reel: MarketingReel;
@@ -40,6 +41,10 @@ export const ReelPlayer: React.FC<ReelPlayerProps> = ({
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
   const [copiedScript, setCopiedScript] = useState<boolean>(false);
+
+  const isPro = useMemo(() => {
+    try { return localStorage.getItem('toonmark_v1_pro') === '1'; } catch { return false; }
+  }, []);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const stopAudioRef = useRef<(() => void) | null>(null);
@@ -259,6 +264,9 @@ export const ReelPlayer: React.FC<ReelPlayerProps> = ({
 
             {/* Gradient Dimming for Subtitle Readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/30 pointer-events-none" />
+
+            {/* Freemium watermark for free-tier users — sits above gradient, below mascot/HUD */}
+            {!isPro && <FreemiumWatermark opacity={0.15} />}
 
             {/* Spokesperson Mascot Overlay in Scene */}
             <div className="absolute bottom-24 right-4 sm:bottom-28 sm:right-6 pointer-events-none z-10">
