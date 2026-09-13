@@ -22,6 +22,7 @@ export interface VectorCartoonRigProps {
   className?: string;
   scale?: number;
   interactive?: boolean;
+  isPaused?: boolean;
 }
 
 export const VectorCartoonRig: React.FC<VectorCartoonRigProps> = ({
@@ -35,6 +36,7 @@ export const VectorCartoonRig: React.FC<VectorCartoonRigProps> = ({
   accessory = 'none',
   className = '',
   scale = 1,
+  isPaused = false,
 }) => {
   // Eye variations
   const renderEyes = () => {
@@ -128,6 +130,16 @@ export const VectorCartoonRig: React.FC<VectorCartoonRigProps> = ({
           </g>
         );
       case 'talking':
+        if (isPaused) {
+          return (
+            <path
+              d="M 92 102 Q 102 118 112 102 Z"
+              fill="#d93838"
+              stroke="#1e1e2f"
+              strokeWidth="2.5"
+            />
+          );
+        }
         return (
           <motion.path
             d="M 92 102 Q 102 120 112 102 Z"
@@ -162,89 +174,89 @@ export const VectorCartoonRig: React.FC<VectorCartoonRigProps> = ({
   // Body and head animation variant based on action
   const bodyVariants = {
     idle: {
-      y: [0, -6, 0],
-      rotate: [0, 0.8, -0.8, 0],
-      transition: { repeat: Infinity, duration: 2.8, ease: "easeInOut" },
+      y: isPaused ? 0 : [0, -6, 0],
+      rotate: isPaused ? 0 : [0, 0.8, -0.8, 0],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 2.8, ease: "easeInOut" },
     },
     talk: {
-      y: [0, -4, 2, -2, 0],
-      rotate: [0, -2, 2, -1, 0],
-      transition: { repeat: Infinity, duration: 1.2, ease: "easeInOut" },
+      y: isPaused ? 0 : [0, -4, 2, -2, 0],
+      rotate: isPaused ? 0 : [0, -2, 2, -1, 0],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 1.2, ease: "easeInOut" },
     },
     wave: {
-      y: [0, -8, 0],
-      rotate: [0, 2, -2, 0],
-      transition: { repeat: Infinity, duration: 1.8, ease: "easeInOut" },
+      y: isPaused ? 0 : [0, -8, 0],
+      rotate: isPaused ? 0 : [0, 2, -2, 0],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 1.8, ease: "easeInOut" },
     },
     celebrate: {
-      y: [0, -18, 0],
-      scale: [1, 1.05, 0.98, 1],
-      transition: { repeat: Infinity, duration: 0.9, ease: "easeInOut" },
+      y: isPaused ? 0 : [0, -18, 0],
+      scale: isPaused ? 1 : [1, 1.05, 0.98, 1],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 0.9, ease: "easeInOut" },
     },
     walk: {
-      x: [-6, 6, -6],
-      y: [0, -5, 0],
-      rotate: [-3, 3, -3],
-      transition: { repeat: Infinity, duration: 1.1, ease: "easeInOut" },
+      x: isPaused ? 0 : [-6, 6, -6],
+      y: isPaused ? 0 : [0, -5, 0],
+      rotate: isPaused ? 0 : [-3, 3, -3],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 1.1, ease: "easeInOut" },
     },
     present: {
-      y: [0, -4, 0],
-      rotate: [0, -2, 0],
-      transition: { repeat: Infinity, duration: 2.2, ease: "easeInOut" },
+      y: isPaused ? 0 : [0, -4, 0],
+      rotate: isPaused ? 0 : [0, -2, 0],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 2.2, ease: "easeInOut" },
     },
   };
 
   const rightArmVariants = {
     wave: {
-      rotate: [0, -45, 10, -40, 5, 0],
-      transition: { repeat: Infinity, duration: 1.2, ease: "easeInOut" },
+      rotate: isPaused ? 0 : [0, -45, 10, -40, 5, 0],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 1.2, ease: "easeInOut" },
     },
     celebrate: {
-      rotate: [-70, -85, -70],
-      transition: { repeat: Infinity, duration: 0.6, ease: "easeInOut" },
+      rotate: isPaused ? -70 : [-70, -85, -70],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 0.6, ease: "easeInOut" },
     },
     present: {
-      rotate: [-55, -50, -55],
-      transition: { repeat: Infinity, duration: 2, ease: "easeInOut" },
+      rotate: isPaused ? -55 : [-55, -50, -55],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 2, ease: "easeInOut" },
     },
     idle: {
-      rotate: [0, -5, 0],
-      transition: { repeat: Infinity, duration: 3, ease: "easeInOut" },
+      rotate: isPaused ? 0 : [0, -5, 0],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 3, ease: "easeInOut" },
     },
     talk: {
-      rotate: [-10, 5, -10],
-      transition: { repeat: Infinity, duration: 1.4, ease: "easeInOut" },
+      rotate: isPaused ? 0 : [-10, 5, -10],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 1.4, ease: "easeInOut" },
     },
     walk: {
-      rotate: [20, -20, 20],
-      transition: { repeat: Infinity, duration: 1.1, ease: "easeInOut" },
+      rotate: isPaused ? 0 : [20, -20, 20],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 1.1, ease: "easeInOut" },
     },
   };
 
   const leftArmVariants = {
     celebrate: {
-      rotate: [70, 85, 70],
-      transition: { repeat: Infinity, duration: 0.6, ease: "easeInOut" },
+      rotate: isPaused ? 70 : [70, 85, 70],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 0.6, ease: "easeInOut" },
     },
     walk: {
-      rotate: [-20, 20, -20],
-      transition: { repeat: Infinity, duration: 1.1, ease: "easeInOut" },
+      rotate: isPaused ? 0 : [-20, 20, -20],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 1.1, ease: "easeInOut" },
     },
     idle: {
-      rotate: [0, 5, 0],
-      transition: { repeat: Infinity, duration: 3, ease: "easeInOut" },
+      rotate: isPaused ? 0 : [0, 5, 0],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 3, ease: "easeInOut" },
     },
     talk: {
-      rotate: [5, -5, 5],
-      transition: { repeat: Infinity, duration: 1.4, ease: "easeInOut" },
+      rotate: isPaused ? 0 : [5, -5, 5],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 1.4, ease: "easeInOut" },
     },
     wave: {
-      rotate: [0, 5, 0],
-      transition: { repeat: Infinity, duration: 1.8, ease: "easeInOut" },
+      rotate: isPaused ? 0 : [0, 5, 0],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 1.8, ease: "easeInOut" },
     },
     present: {
-      rotate: [10, 5, 10],
-      transition: { repeat: Infinity, duration: 2, ease: "easeInOut" },
+      rotate: isPaused ? 0 : [10, 5, 10],
+      transition: { repeat: isPaused ? 0 : Infinity, duration: 2, ease: "easeInOut" },
     },
   };
 
