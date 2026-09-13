@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   Wand2,
   Sliders,
@@ -29,6 +29,7 @@ import {
 } from '../data/cartoonAvatars';
 import VectorCartoonRig, { CartoonArchetype } from './VectorCartoonRig';
 import { saveProjectToFirestore } from '../lib/projectService';
+import FreemiumWatermark from './FreemiumWatermark';
 
 interface CartoonStudioProps {
   selectedStyle?: CartoonStyle;
@@ -85,6 +86,10 @@ export const CartoonStudio: React.FC<CartoonStudioProps> = ({
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const isPro = useMemo(() => {
+    try { return localStorage.getItem('toonmark_v1_pro') === '1'; } catch { return false; }
+  }, []);
 
   const activeStyleObj = CARTOON_STYLES.find((s) => s.id === selectedStyle) || CARTOON_STYLES[0];
 
@@ -480,6 +485,9 @@ export const CartoonStudio: React.FC<CartoonStudioProps> = ({
                     <p className="text-sm font-bold text-amber-300">Stylizing Cartoon Character with AI...</p>
                   </div>
                 )}
+
+                {/* Freemium watermark for free-tier users */}
+                {!isPro && <FreemiumWatermark />}
               </div>
 
               {/* Action and Rig Trigger Bar */}
