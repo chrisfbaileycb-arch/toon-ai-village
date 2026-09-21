@@ -108,6 +108,8 @@ export const StoryboardEditor: React.FC<StoryboardEditorProps> = ({
           sceneId,
           prompt,
           characterStyle: reel.characterStyle,
+          aspectRatio: reel.aspectRatio,
+          characterBible: reel.characterBible,
         }),
       });
 
@@ -115,7 +117,7 @@ export const StoryboardEditor: React.FC<StoryboardEditorProps> = ({
       if (data.imageUrl) {
         const sceneIndex = reel.scenes.findIndex((s) => s.id === sceneId);
         if (sceneIndex >= 0) {
-          updateScene(sceneIndex, { imageUrl: data.imageUrl });
+          updateScene(sceneIndex, { imageUrl: data.imageUrl, approvalStatus: 'review' });
         }
       }
     } catch (e) {
@@ -214,7 +216,7 @@ export const StoryboardEditor: React.FC<StoryboardEditorProps> = ({
             Script & Scene Director
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
-            Refine voiceover timing, re-write narrative lines, and re-generate visuals with Google Imagen.
+            Review every frame, refine the narration, and regenerate visuals from the locked Character Bible.
           </p>
         </div>
 
@@ -315,6 +317,9 @@ export const StoryboardEditor: React.FC<StoryboardEditorProps> = ({
                     <p className="text-[11px] text-zinc-400 line-clamp-2 leading-tight">
                       &quot;{sc.narration}&quot;
                     </p>
+                    <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[9px] font-black ${sc.approvalStatus === 'approved' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/15 text-amber-300'}`}>
+                      {sc.approvalStatus === 'approved' ? 'Approved' : 'Needs review'}
+                    </span>
                   </div>
                 </div>
               );
@@ -345,6 +350,14 @@ export const StoryboardEditor: React.FC<StoryboardEditorProps> = ({
                 <Trash2 className="h-3.5 w-3.5" />
                 <span>Delete Scene</span>
               </button>
+              <button
+                id="approve-current-scene-btn"
+                onClick={() => updateScene(activeSceneIndex, { approvalStatus: 'approved' })}
+                className="flex items-center space-x-1 rounded-xl bg-emerald-500 px-3 py-2 text-xs font-black text-slate-950 hover:bg-emerald-400 transition"
+              >
+                <Check className="h-3.5 w-3.5" />
+                <span>{currentScene.approvalStatus === 'approved' ? 'Scene approved' : 'Approve scene'}</span>
+              </button>
             </div>
 
             {/* Scene Visual & Regeneration */}
@@ -367,21 +380,21 @@ export const StoryboardEditor: React.FC<StoryboardEditorProps> = ({
               <div className="sm:col-span-7 space-y-2.5">
                 <span className="text-xs font-bold text-white block">Visual Scene Prompt & Setting</span>
                 <p className="text-xs text-zinc-400 leading-relaxed">
-                  Regenerate with Google Imagen using your consistent mascot character in this visual context.
+                  Regenerate this frame while preserving the locked face, clothing, proportions, palette, and art direction.
                 </p>
                 <button
                   id="regenerate-scene-img-btn"
                   onClick={() =>
                     regenerateSceneImage(
                       currentScene.id,
-                      `Cartoon 3D mascot, ${currentScene.title}, ${currentScene.caption}`
+                      currentScene.visualPrompt || `${currentScene.title}. ${currentScene.visualDescription}`
                     )
                   }
                   disabled={isRegeneratingSceneId === currentScene.id}
                   className="flex items-center space-x-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 px-4 py-2.5 text-xs font-bold text-white transition cursor-pointer disabled:opacity-50"
                 >
                   <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-                  <span>Re-Generate Scene Visual (Imagen 3)</span>
+                  <span>Regenerate with Character Bible</span>
                 </button>
               </div>
             </div>
