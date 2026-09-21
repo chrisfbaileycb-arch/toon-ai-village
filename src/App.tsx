@@ -26,6 +26,8 @@ import VectorCartoonRig, { CartoonArchetype } from './components/VectorCartoonRi
 import CartoonAnimationLibrary from './components/CartoonAnimationLibrary';
 import CartoonStudio from './components/CartoonStudio';
 import ReelBuilder from './components/ReelBuilder';
+import ReelPlayer from './components/ReelPlayer';
+import StoryboardEditor from './components/StoryboardEditor';
 import HitPawAiToolkit from './components/HitPawAiToolkit';
 import FirstProjectOnboarding from './components/FirstProjectOnboarding';
 import type { OnboardingSetup } from './components/FirstProjectOnboarding';
@@ -36,7 +38,7 @@ import { defaultHitPawSettings } from './types';
 // APP ROUTING
 // ==========================================
 
-type AppView = 'onboarding' | 'studio' | 'reel-builder' | 'animation-lab' | 'inspector';
+type AppView = 'onboarding' | 'studio' | 'reel-builder' | 'storyboard' | 'reel-preview' | 'animation-lab' | 'inspector';
 
 // ==========================================
 // INSPECTOR CONSTANTS (PRESERVED)
@@ -222,6 +224,7 @@ export function App() {
   const [reelDuration, setReelDuration] = useState<30 | 60 | 90>(30);
   const [isGeneratingReel, setIsGeneratingReel] = useState<boolean>(false);
   const [isHitPawOpen, setIsHitPawOpen] = useState<boolean>(false);
+  const [generatedReel, setGeneratedReel] = useState<MarketingReel | null>(null);
 
   // ---------- Inspector state (preserved) ----------
   const [inspectorView, setInspectorView] = useState<'vector-rigs' | 'animation-principles'>('vector-rigs');
@@ -254,8 +257,9 @@ export function App() {
     setView('reel-builder');
   };
 
-  const handleReelGenerated = (_reel: MarketingReel) => {
-    // Future: persist to Firestore / show delivery modal
+  const handleReelGenerated = (reel: MarketingReel) => {
+    setGeneratedReel(reel);
+    setView('storyboard');
   };
 
   const handleSelectArchetype = (archId: CartoonArchetype) => {
@@ -345,6 +349,23 @@ export function App() {
                 onReelGenerated={handleReelGenerated}
                 isGenerating={isGeneratingReel}
                 setIsGenerating={setIsGeneratingReel}
+              />
+            </main>
+          )}
+
+          {view === 'storyboard' && generatedReel && (
+            <StoryboardEditor
+              reel={generatedReel}
+              onUpdateReel={setGeneratedReel}
+              onOpenPlayer={() => setView('reel-preview')}
+            />
+          )}
+
+          {view === 'reel-preview' && generatedReel && (
+            <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+              <ReelPlayer
+                reel={generatedReel}
+                onEditStoryboard={() => setView('storyboard')}
               />
             </main>
           )}
