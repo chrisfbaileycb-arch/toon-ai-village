@@ -13,6 +13,8 @@ import {
   Layers,
   Flame,
   CheckCircle2,
+  BookOpenCheck,
+  UserRoundCheck,
 } from 'lucide-react';
 import {
   MarketingGoal,
@@ -21,6 +23,7 @@ import {
   VoicePersona,
   CartoonStyle,
   MarketingReel,
+  CharacterBible,
 } from '../types';
 
 interface ReelBuilderProps {
@@ -54,6 +57,35 @@ export const ReelBuilder: React.FC<ReelBuilderProps> = ({
   );
   const [customKeywords, setCustomKeywords] = useState<string>('level up, XP, 100 bonus gems');
   const [generationStep, setGenerationStep] = useState<string>('');
+  const [characterName, setCharacterName] = useState<string>('Village Guide');
+  const [characterDescription, setCharacterDescription] = useState<string>(
+    'A warm, trustworthy small-business guide with friendly expressions and simple professional clothing'
+  );
+  const [characterBible, setCharacterBible] = useState<CharacterBible | null>(null);
+  const [isGeneratingBible, setIsGeneratingBible] = useState(false);
+
+  const generateCharacterBible = async () => {
+    setIsGeneratingBible(true);
+    try {
+      const res = await fetch('/api/generate-character-bible', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: characterName,
+          description: characterDescription,
+          style: currentStyle,
+          referenceImageUrl: currentCartoonImage,
+        }),
+      });
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      setCharacterBible(await res.json());
+    } catch (error) {
+      console.error('Character Bible generation failed:', error);
+      alert('Character Bible generation could not be completed. Check the image API configuration and try again.');
+    } finally {
+      setIsGeneratingBible(false);
+    }
+  };
 
   const GOALS: { id: MarketingGoal; label: string; icon: string; desc: string; badge: string }[] = [
     {
@@ -129,6 +161,7 @@ export const ReelBuilder: React.FC<ReelBuilderProps> = ({
           characterCartoonUrl: currentCartoonImage,
           aspectRatio,
           customKeywords,
+          characterBible,
         }),
       });
 
@@ -192,6 +225,59 @@ export const ReelBuilder: React.FC<ReelBuilderProps> = ({
           <span>Character Consistent</span>
         </div>
       </div>
+
+      <section className="rounded-3xl border border-emerald-500/30 bg-emerald-950/20 p-5 sm:p-6 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 text-emerald-300">
+              <BookOpenCheck className="h-5 w-5" />
+              <span className="text-xs font-black uppercase tracking-wider">Character Bible</span>
+            </div>
+            <h3 className="mt-1 text-xl font-black text-white">Lock the character before building scenes</h3>
+            <p className="mt-1 max-w-2xl text-xs text-emerald-100/70">
+              This reference sheet preserves the same face, clothing, proportions, palette, and friendly cartoon treatment throughout the video.
+            </p>
+          </div>
+          {characterBible && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 text-xs font-black text-emerald-300 border border-emerald-500/30">
+              <UserRoundCheck className="h-4 w-4" /> Identity locked
+            </span>
+          )}
+        </div>
+
+        <div className="grid lg:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+          <label className="space-y-1.5">
+            <span className="text-xs font-bold text-zinc-300">Character name</span>
+            <input value={characterName} onChange={(e) => setCharacterName(e.target.value)}
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-3 text-sm text-white outline-none focus:border-emerald-500" />
+          </label>
+          <label className="space-y-1.5">
+            <span className="text-xs font-bold text-zinc-300">Appearance and personality</span>
+            <input value={characterDescription} onChange={(e) => setCharacterDescription(e.target.value)}
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-3 text-sm text-white outline-none focus:border-emerald-500" />
+          </label>
+          <button type="button" onClick={generateCharacterBible} disabled={isGeneratingBible}
+            className="rounded-xl bg-emerald-500 px-5 py-3 text-sm font-black text-slate-950 hover:bg-emerald-400 disabled:opacity-50">
+            {isGeneratingBible ? 'Creating reference…' : characterBible ? 'Regenerate Bible' : 'Create Character Bible'}
+          </button>
+        </div>
+
+        {characterBible?.referenceImageUrl && (
+          <div className="grid sm:grid-cols-[240px_1fr] gap-4 rounded-2xl border border-emerald-500/20 bg-black/20 p-3">
+            <img src={characterBible.referenceImageUrl} alt={`${characterBible.name} character reference sheet`}
+              className="h-36 w-full rounded-xl object-cover border border-emerald-500/30" />
+            <div className="py-1">
+              <p className="text-sm font-black text-white">{characterBible.name}</p>
+              <p className="mt-1 text-xs leading-5 text-zinc-400">{characterBible.identityPrompt}</p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {characterBible.guardrails.slice(0, 4).map((rule) => (
+                  <span key={rule} className="rounded-full bg-zinc-800 px-2.5 py-1 text-[10px] font-bold text-zinc-300">{rule}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Step 1: Reel Duration Selector */}
       <div className="space-y-3">
@@ -430,7 +516,7 @@ export const ReelBuilder: React.FC<ReelBuilderProps> = ({
         <button
           id="generate-marketing-reel-btn"
           onClick={handleGenerate}
-          disabled={isGenerating}
+          disabled={isGenerating || !characterBible}
           className="w-full flex items-center justify-center space-x-3 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-pink-500 px-8 py-4 font-black text-white shadow-2xl hover:brightness-110 transition-all transform hover:scale-[1.01] cursor-pointer disabled:opacity-50"
         >
           {isGenerating ? (
@@ -441,13 +527,13 @@ export const ReelBuilder: React.FC<ReelBuilderProps> = ({
           ) : (
             <>
               <Sparkles className="h-5 w-5" />
-              <span className="text-base">Generate Complete {duration}-Second Marketing Reel</span>
+              <span className="text-base">{characterBible ? `Generate Complete ${duration}-Second Marketing Reel` : 'Create Character Bible First'}</span>
               <ArrowRight className="h-5 w-5" />
             </>
           )}
         </button>
         <p className="text-center text-xs text-zinc-500 mt-2">
-          Generates complete spoken script, scene-by-scene storyboard, character animations, and audio voiceover.
+          Uses the locked Character Bible to generate a consistent script, reviewable storyboard scenes, and voiceover.
         </p>
       </div>
     </div>
