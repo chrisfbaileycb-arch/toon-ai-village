@@ -25,6 +25,18 @@ export type ReelDuration = 30 | 60 | 90;
 
 export type AspectRatio = '9:16' | '16:9' | '1:1';
 
+export interface CharacterBible {
+  id: string;
+  name: string;
+  description: string;
+  visualStyle: CartoonStyle;
+  referenceImageUrl: string;
+  identityPrompt: string;
+  palette: string[];
+  guardrails: string[];
+  createdAt: number;
+}
+
 export type VoicePersona = 'Puck' | 'Charon' | 'Kore' | 'Fenrir' | 'Zephyr' | 'Aoede';
 
 export interface CartoonStyleOption {
@@ -68,6 +80,7 @@ export interface ReelScene {
   cameraTransition?: string;
   spokenLine?: string;
   visualStyle?: string;
+  approvalStatus?: 'review' | 'approved' | 'regenerating';
 }
 
 export type Scene = ReelScene;
@@ -102,6 +115,7 @@ export interface MarketingReel {
   characterStyle: CartoonStyle;
   marketingCopy: MarketingCopyBundle;
   createdAt: number;
+  characterBible?: CharacterBible;
 }
 
 export interface SampleProject {
