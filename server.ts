@@ -7,7 +7,9 @@ import { GoogleGenAI, Type, Modality } from '@google/genai';
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const portArgIndex = process.argv.indexOf('--port');
+const cliPort = portArgIndex >= 0 ? Number(process.argv[portArgIndex + 1]) : undefined;
+const PORT = cliPort || Number(process.env.PORT || 3000);
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
