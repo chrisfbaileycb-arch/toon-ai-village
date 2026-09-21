@@ -30,6 +30,65 @@ function getGenAI(): GoogleGenAI | null {
   });
 }
 
+const FRIENDLY_CARTOON_GUARDRAILS = [
+  'clearly illustrated cartoon, never photorealistic',
+  'warm expressive face with natural closed-mouth or subtle smile',
+  'soft simplified skin with no pores or waxy texture',
+  'friendly proportional eyes with visible pupils, never glassy',
+  'consistent head, body, clothing, hair, and color proportions',
+  'no uncanny teeth, distorted hands, extra fingers, duplicate limbs, text, logos, or watermark',
+  'original visual language with no imitation of a named studio, franchise, artist, or celebrity',
+];
+
+const ORIGINAL_STYLE_PROMPTS: Record<string, string> = {
+  'pixar-3d': 'warm dimensional storybook cartoon, rounded appealing forms, soft cinematic light, handcrafted original character design',
+  'anime-manga': 'bright original cel-shaded adventure cartoon, expressive clean linework, controlled highlights',
+  'comic-popart': 'original bold comic adventure illustration, confident ink shapes, energetic color blocking',
+  'claymation': 'friendly handcrafted clay character, tactile but clean surfaces, miniature warm studio lighting',
+  'cyberpunk': 'friendly futuristic cartoon illustration, restrained neon accents, readable face and silhouette',
+  'vector-flat': 'clean business cartoon illustration, soft geometric shapes, expressive character posing, editorial polish',
+  'retro-90s': 'original retro Saturday cartoon, lively linework, warm print color, playful readable forms',
+  'chibi-kawaii': 'gentle chibi storybook character, simplified proportions, soft colors, expressive but natural eyes',
+};
+
+function splitImageDataUrl(dataUrl?: string) {
+  if (!dataUrl || !dataUrl.startsWith('data:image/')) return null;
+  const match = dataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
+  return match ? { mimeType: match[1], data: match[2] } : null;
+}
+
+async function generateConsistentSceneImage(
+  ai: GoogleGenAI,
+  prompt: string,
+  style: string,
+  aspectRatio: string,
+  characterBible?: any,
+) {
+  const reference = splitImageDataUrl(characterBible?.referenceImageUrl);
+  const parts: any[] = [];
+  if (reference) parts.push({ inlineData: reference });
+  parts.push({
+    text: `Create one finished storyboard frame for a short faceless cartoon video.
+Scene: ${prompt}
+Character identity: ${characterBible?.identityPrompt || characterBible?.description || 'an original friendly business cartoon guide'}
+Art direction: ${ORIGINAL_STYLE_PROMPTS[style] || ORIGINAL_STYLE_PROMPTS['vector-flat']}.
+Continuity is mandatory: preserve the reference character's face shape, hair, clothing, proportions, palette, and illustration treatment.
+Safety and quality rules: ${FRIENDLY_CARTOON_GUARDRAILS.join('; ')}.
+Compose a clear single scene with purposeful gesture, readable background, cinematic depth, and space for captions. Do not render captions or text inside the image.`,
+  });
+
+  const normalizedRatio = ['9:16', '16:9', '1:1'].includes(aspectRatio) ? aspectRatio : '9:16';
+  const response = await ai.models.generateContent({
+    model: 'gemini-3.1-flash-lite-image',
+    contents: { parts },
+    config: { imageConfig: { aspectRatio: normalizedRatio as any } },
+  });
+  for (const part of response.candidates?.[0]?.content?.parts || []) {
+    if (part.inlineData?.data) return `data:image/png;base64,${part.inlineData.data}`;
+  }
+  return null;
+}
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
@@ -37,6 +96,66 @@ app.get('/api/health', (req, res) => {
     hasApiKey: Boolean(process.env.GEMINI_API_KEY),
     timestamp: Date.now(),
   });
+});
+
+app.post('/api/generate-character-bible', async (req, res) => {
+  try {
+    const {
+      name = 'Village Guide',
+      description = 'A warm, trustworthy small-business guide',
+      style = 'vector-flat',
+      referenceImageUrl = '',
+    } = req.body;
+    const ai = getGenAI();
+    const identityPrompt = `${name}: ${description}. Original ${ORIGINAL_STYLE_PROMPTS[style] || ORIGINAL_STYLE_PROMPTS['vector-flat']}. Consistent clothing, hair, face, body proportions, and palette across every scene.`;
+
+    if (!ai) {
+      return res.json({
+        id: `bible-${Date.now()}`, name, description, visualStyle: style,
+        referenceImageUrl,
+        identityPrompt,
+        palette: ['#092342', '#ff6259', '#ffd058', '#2a72e5', '#fffaf0'],
+        guardrails: FRIENDLY_CARTOON_GUARDRAILS,
+        createdAt: Date.now(),
+        fallback: true,
+      });
+    }
+
+    const reference = splitImageDataUrl(referenceImageUrl);
+    const parts: any[] = [];
+    if (reference) parts.push({ inlineData: reference });
+    parts.push({ text: `Create a professional character reference sheet for an original cartoon video character named "${name}".
+Description: ${description}
+Art direction: ${ORIGINAL_STYLE_PROMPTS[style] || ORIGINAL_STYLE_PROMPTS['vector-flat']}.
+Show the same character in front, three-quarter, and side views plus four small expressions: friendly, explaining, thoughtful, and excited.
+Use a clean warm cream reference-sheet background. No labels, text, logos, brand marks, or watermark.
+The identity must be exceptionally consistent between every pose.
+Quality rules: ${FRIENDLY_CARTOON_GUARDRAILS.join('; ')}.` });
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.1-flash-lite-image',
+      contents: { parts },
+      config: { imageConfig: { aspectRatio: '16:9' } },
+    });
+    let generatedReference = referenceImageUrl;
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData?.data) {
+        generatedReference = `data:image/png;base64,${part.inlineData.data}`;
+        break;
+      }
+    }
+    res.json({
+      id: `bible-${Date.now()}`, name, description, visualStyle: style,
+      referenceImageUrl: generatedReference,
+      identityPrompt,
+      palette: ['#092342', '#ff6259', '#ffd058', '#2a72e5', '#fffaf0'],
+      guardrails: FRIENDLY_CARTOON_GUARDRAILS,
+      createdAt: Date.now(),
+    });
+  } catch (error: any) {
+    console.error('Character bible generation failed:', error);
+    res.status(500).json({ error: error.message || 'Character bible generation failed' });
+  }
 });
 
 // Cartoonize transformation route
@@ -149,6 +268,7 @@ app.post('/api/generate-reel', async (req, res) => {
       aspectRatio = '9:16',
       characterCartoonUrl,
       customKeywords = '',
+      characterBible,
     } = req.body;
 
     const numScenes = duration === 30 ? 3 : duration === 60 ? 5 : 7;
@@ -177,6 +297,7 @@ app.post('/api/generate-reel', async (req, res) => {
         characterOriginalUrl: characterCartoonUrl || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="%231e1b4b"/><circle cx="100" cy="100" r="60" fill="%2364748b"/></svg>',
         characterCartoonUrl: characterCartoonUrl || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="%230d0417"/><circle cx="100" cy="100" r="60" fill="%23ff9900"/></svg>',
         characterStyle,
+        characterBible,
         marketingCopy: {
           instagramCaption: `Meet ${appNameOrProduct} 🚀 Transform how you get things done. Link in bio!`,
           tiktokHook: `Nobody is talking about this game-changer app yet... 👀`,
@@ -204,6 +325,7 @@ Reel Duration: EXACTLY ${duration} SECONDS.
 Total Spoken Script Length: ${targetWordCount} (vital for a natural speaking pace of ~2.4 words per second to fit exactly in ${duration}s).
 Number of Scenes to create: Exactly ${numScenes} scenes.
 Additional keywords/notes: ${customKeywords || 'None'}
+Locked Character Bible: ${characterBible?.identityPrompt || characterBible?.description || 'Use the supplied original cartoon guide consistently'}
 
 Rules:
 1. Scene 1 MUST be a 3-second killer HOOK that stops scrolling dead in its tracks.
@@ -312,11 +434,27 @@ Rules:
 
     const parsed = JSON.parse(response.text || '{}');
     const curatedImages = getCuratedSceneImages(characterStyle);
-    const enrichedScenes = (parsed.scenes || []).map((scene: any, idx: number) => ({
-      id: `scene-${idx + 1}-${Date.now()}`,
-      ...scene,
-      imageUrl: curatedImages[idx % curatedImages.length],
-    }));
+    const enrichedScenes = [];
+    for (const [idx, scene] of (parsed.scenes || []).entries()) {
+      let imageUrl = curatedImages[idx % curatedImages.length];
+      try {
+        imageUrl = await generateConsistentSceneImage(
+          ai,
+          scene.visualPrompt || scene.visualDescription,
+          characterStyle,
+          aspectRatio,
+          characterBible,
+        ) || imageUrl;
+      } catch (sceneError: any) {
+        console.warn(`Scene ${idx + 1} visual generation failed:`, sceneError?.message);
+      }
+      enrichedScenes.push({
+        id: `scene-${idx + 1}-${Date.now()}`,
+        ...scene,
+        imageUrl,
+        approvalStatus: 'review',
+      });
+    }
 
     const result = {
       id: `reel-${Date.now()}`,
@@ -337,6 +475,7 @@ Rules:
       characterOriginalUrl: characterCartoonUrl || curatedImages[0],
       characterCartoonUrl: characterCartoonUrl || curatedImages[0],
       characterStyle,
+      characterBible,
       marketingCopy: parsed.marketingCopy || {
         instagramCaption: `Introducing ${appNameOrProduct}! 🚀 Link in bio.`,
         tiktokHook: `POV: You just discovered ${appNameOrProduct} 👀`,
@@ -404,9 +543,14 @@ app.post('/api/tts', async (req, res) => {
 });
 
 // Generate individual scene image
-app.post('/api/generate-scene-image', async (req, res) => {
+async function handleSceneImageRequest(req: express.Request, res: express.Response) {
   try {
-    const { prompt, style = 'pixar-3d' } = req.body;
+    const {
+      prompt,
+      style = req.body.characterStyle || 'vector-flat',
+      aspectRatio = '9:16',
+      characterBible,
+    } = req.body;
     const ai = getGenAI();
 
     if (!ai) {
@@ -415,23 +559,8 @@ app.post('/api/generate-scene-image', async (req, res) => {
     }
 
     try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.1-flash-lite-image',
-        contents: {
-          parts: [{ text: `${prompt}, stylized ${style} cartoon aesthetic, vibrant, 4k quality, cinematic lighting` }],
-        },
-        config: {
-          imageConfig: {
-            aspectRatio: '9:16',
-          },
-        },
-      });
-
-      for (const part of response.candidates?.[0]?.content?.parts || []) {
-        if (part.inlineData?.data) {
-          return res.json({ imageUrl: `data:image/png;base64,${part.inlineData.data}` });
-        }
-      }
+      const imageUrl = await generateConsistentSceneImage(ai, prompt, style, aspectRatio, characterBible);
+      if (imageUrl) return res.json({ imageUrl, approvalStatus: 'review' });
     } catch (e: any) {
       console.warn('Scene image generation failed:', e?.message);
     }
@@ -441,7 +570,10 @@ app.post('/api/generate-scene-image', async (req, res) => {
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
-});
+}
+
+app.post('/api/generate-scene-image', handleSceneImageRequest);
+app.post('/api/regenerate-scene', handleSceneImageRequest);
 
 // AI Cartoon Script / Scene Generator for Toon Story Studio
 app.post('/api/generate-toon-story', async (req, res) => {
