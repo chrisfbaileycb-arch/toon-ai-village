@@ -13,17 +13,7 @@ import {
   onSnapshot,
   serverTimestamp,
 } from 'firebase/firestore';
-
-// Configuration loaded from firebase-applet-config.json
-const firebaseConfig = {
-  projectId: "gen-lang-client-0928801489",
-  appId: "1:603740153599:web:061864125a60a20a164eca",
-  apiKey: "AIzaSyAfWw8gWWi0GNxTcWOiD4fq2OvBwu6HpAM",
-  authDomain: "gen-lang-client-0928801489.firebaseapp.com",
-  firestoreDatabaseId: "ai-studio-tonemarkaianimat-fb417753-ba4f-45af-b0f9-6fb80f9dee5f",
-  storageBucket: "gen-lang-client-0928801489.firebasestorage.app",
-  messagingSenderId: "603740153599",
-};
+import firebaseConfig from '../../firebase-applet-config.json';
 
 let app: FirebaseApp;
 let db: Firestore | null = null;
