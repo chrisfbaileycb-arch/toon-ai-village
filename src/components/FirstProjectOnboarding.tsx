@@ -10,6 +10,8 @@ import { HitPawAspectRatio, HitPawFormSettings, defaultHitPawSettings } from '..
 export type OnboardingDuration = '30 sec' | '60 sec' | '90 sec';
 
 export interface OnboardingSetup {
+  idea: string;
+  websiteUrl: string;
   duration: OnboardingDuration;
   templateId: string;
   templateTitle: string;
@@ -59,6 +61,8 @@ export const FirstProjectOnboarding: React.FC<FirstProjectOnboardingProps> = ({ 
   const handleBuild = () => {
     const seconds = Number(duration.split(' ')[0]);
     onComplete({
+      idea: idea.trim(),
+      websiteUrl: websiteUrl.trim(),
       duration,
       templateId: templateId === 'how-to-pitch' ? howToType : templateId,
       templateTitle: templateId === 'how-to-pitch'
