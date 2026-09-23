@@ -10,7 +10,9 @@ import './village.css';
 
 type View = 'home' | 'builder' | 'studio' | 'preview' | 'projects' | 'settings';
 type CharacterId = 'cast-01' | 'cast-02' | 'cast-03' | 'cast-04' | 'cast-05' | 'cast-06';
-type WorldId = 'shop' | 'app' | 'podcast' | 'stage';
+type WorldId = 'shop' | 'app' | 'podcast' | 'stage'
+  | 'software-desk' | 'agent-matrix' | 'saas-launchpad' | 'founders-boardroom'
+  | 'creator-workshop' | 'the-classroom' | 'retail-floor' | 'future-tech';
 
 interface Draft {
   name: string; description: string; audience: string; duration: ReelDuration;
@@ -28,11 +30,19 @@ const CAST: Array<{ id: CharacterId; image: string; title: string; description: 
   { id: 'cast-06', image: '/village/cast-06.webp', title: 'Dragon sidekick', description: 'Curious, charming, surprising' },
 ];
 
-const WORLDS: Array<{ id: WorldId; image: string; title: string; note: string; goal: MarketingGoal }> = [
+const WORLDS: Array<{ id: WorldId; image: string; title: string; note?: string; subtitle?: string; goal?: MarketingGoal }> = [
   { id: 'shop', image: '/village/world-shop.webp', title: 'Main Street', note: 'Business stories & local marketing', goal: 'viral-reel' },
   { id: 'app', image: '/village/world-app.webp', title: 'App World', note: 'Walkthroughs & website explainers', goal: 'app-launch' },
   { id: 'podcast', image: '/village/world-podcast.webp', title: 'Podcast Lounge', note: 'Faceless shows & conversations', goal: 'youtube-explainer' },
   { id: 'stage', image: '/village/world-stage.webp', title: 'Big Idea Stage', note: 'How-tos, courses & business pitches', goal: 'saas-workflow' },
+  { id: 'software-desk', title: 'Software & Tech Desk', subtitle: 'Step-by-step software guides & UI walk-throughs', image: '/assets/environments/software-desk.webp' },
+  { id: 'agent-matrix', title: 'Agent Command Matrix', subtitle: 'Multi-agent pipelines & autonomous AI workflows', image: '/assets/environments/agent-matrix.webp' },
+  { id: 'saas-launchpad', title: 'SaaS Launchpad', subtitle: 'High-converting product landing pages & feature teasers', image: '/assets/environments/saas-launchpad.webp' },
+  { id: 'founders-boardroom', title: 'Founder Boardroom', subtitle: 'Company origin stories & investor pitch decks', image: '/assets/environments/founders-boardroom.webp' },
+  { id: 'creator-workshop', title: 'Creator Workshop', subtitle: 'Creative how-tos & digital product setups', image: '/assets/environments/creator-workshop.webp' },
+  { id: 'the-classroom', title: 'The Classroom', subtitle: 'Educational training & bite-sized masterclasses', image: '/assets/environments/the-classroom.webp' },
+  { id: 'retail-floor', title: 'Retail & Storefront', subtitle: 'POS walk-throughs & customer buying journeys', image: '/assets/environments/retail-floor.webp' },
+  { id: 'future-tech', title: 'Future Tech Canvas', subtitle: 'Emerging tech breakdowns & visionary announcements', image: '/assets/environments/future-tech.webp' },
 ];
 
 const DEFAULT_DRAFT: Draft = {
@@ -83,7 +93,7 @@ function App() {
   };
   const chooseWorld = (id: WorldId) => {
     const choice = WORLDS.find((item) => item.id === id) || WORLDS[0];
-    setDraft((current) => ({ ...current, worldId: id, goal: choice.goal }));
+    setDraft((current) => ({ ...current, worldId: id, goal: choice.goal ?? current.goal }));
   };
 
   const generateBible = async () => {
@@ -112,7 +122,7 @@ function App() {
       const response = await fetch('/api/generate-reel', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          appNameOrProduct: draft.name, appDescription: `${draft.description}\nWorld: ${selectedWorld.title} — ${selectedWorld.note}.`,
+          appNameOrProduct: draft.name, appDescription: `${draft.description}\nWorld: ${selectedWorld.title} — ${selectedWorld.subtitle ?? selectedWorld.note}.`,
           targetAudience: draft.audience, goal: draft.goal, duration: draft.duration, voicePersona: draft.voice,
           characterStyle: draft.style, aspectRatio: draft.aspectRatio, customKeywords: draft.websiteUrl,
           characterBible: bible, characterCartoonUrl: bible.referenceImageUrl || selectedCharacter.image,
@@ -191,7 +201,7 @@ function App() {
 
           <section className="world-section">
             <div className="chapter-heading"><span>03</span><div><em>SET THE STAGE</em><h2>Where does the story live?</h2></div></div>
-            <div className="world-grid">{WORLDS.map((world) => <button key={world.id} className={draft.worldId === world.id ? 'selected' : ''} onClick={() => chooseWorld(world.id)}><img src={world.image} alt={world.title}/><span><strong>{world.title}</strong><small>{world.note}</small></span><i><Check/></i></button>)}</div>
+            <div className="world-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">{WORLDS.map((world) => <button key={world.id} className={draft.worldId === world.id ? 'selected' : ''} onClick={() => chooseWorld(world.id)}><img src={world.image} alt={world.title}/><span><strong>{world.title}</strong><small>{world.subtitle ?? world.note}</small></span><i><Check/></i></button>)}</div>
           </section>
 
           <section className="finish-section">
@@ -221,7 +231,7 @@ function Landing({ onCreate, onProjects }: { onCreate: () => void; onProjects: (
   return <main className="landing">
     <header className="landing-nav"><button className="landing-brand"><span><Film/></span><strong>Toon AI <b>Village</b></strong></button><nav><a href="#stories">What you can make</a><a href="#how">How it works</a></nav><div><button onClick={onProjects}>My cartoons</button><button className="nav-cta" onClick={onCreate}>Create a cartoon <ChevronRight/></button></div></header>
     <section className="landing-hero"><img src="/village/story-village-hero.webp" alt="A lively cartoon village where creators build animated stories"/><div className="hero-shade"/><div className="hero-copy"><em>YOUR IDEA HAS A WORLD WAITING</em><h1>Make people <span>stop.</span><br/>Make them <i>feel.</i></h1><p>Turn a business, app, lesson, podcast, or wild little idea into a character-led cartoon people remember.</p><div><button onClick={onCreate}><Sparkles/> Start creating</button><a href="#stories"><Play/> See what you can make</a></div><small>No animation experience needed. You direct. The Village builds.</small></div><div className="hero-ticket"><span>FROM IDEA TO CARTOON</span><div><strong>01</strong><p>Name your character</p></div><div><strong>02</strong><p>Choose their world</p></div><div><strong>03</strong><p>Direct every scene</p></div></div></section>
-    <section className="story-types" id="stories"><div className="section-kicker">ONE VILLAGE. EVERY KIND OF STORY.</div><h2>What will your cartoon do?</h2><div>{WORLDS.map((world,index) => <button key={world.id} onClick={onCreate}><img src={world.image} alt=""/><span>0{index+1}</span><h3>{world.title}</h3><p>{world.note}</p><i><ChevronRight/></i></button>)}</div></section>
+    <section className="story-types" id="stories"><div className="section-kicker">ONE VILLAGE. EVERY KIND OF STORY.</div><h2>What will your cartoon do?</h2><div>{WORLDS.slice(0, 4).map((world,index) => <button key={world.id} onClick={onCreate}><img src={world.image} alt=""/><span>0{index+1}</span><h3>{world.title}</h3><p>{world.note}</p><i><ChevronRight/></i></button>)}</div></section>
     <section className="how-it-works" id="how"><div><em>HOW IT WORKS</em><h2>A real production flow.<br/>Made human.</h2><p>Your character stays recognizable. Your scenes stay editable. Nothing leaves the studio until it feels right.</p><button onClick={onCreate}>Build your first story <ChevronRight/></button></div><div className="process-cards"><article><span>1</span><strong>Bring the idea</strong><p>Describe it, paste a script, or share a website.</p></article><article><span>2</span><strong>Cast your character</strong><p>Choose a visual direction and give them your own name.</p></article><article><span>3</span><strong>Direct the scenes</strong><p>Review, rewrite, repaint, approve, then export.</p></article></div></section>
   </main>;
 }
