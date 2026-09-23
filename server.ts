@@ -166,10 +166,10 @@ app.post('/api/cartoonize', async (req, res) => {
 
     // Style prompt presets
     const styleDescriptions: Record<string, string> = {
-      'pixar-3d': 'Cute and expressive 3D animated character in modern Disney Pixar style, soft volumetric lighting, subsurface scattering, lively large eyes, smooth studio render.',
+      'pixar-3d': 'Warm dimensional storybook character with rounded appealing forms, soft volumetric lighting, expressive natural eyes, and an original cinematic render.',
       'anime-manga': 'High-energy Japanese anime character artwork, sharp cel-shaded lines, dynamic hair highlights, radiant rim light, Studio Mappa style.',
       'comic-popart': 'Bold pop-art graphic novel comic illustration, heavy black ink outlines, Roy Lichtenstein halftone Ben-Day dots, vibrant primary colors.',
-      'claymation': 'Handcrafted claymation plasticine model, Wallace and Gromit stop-motion style, miniature studio lighting, tactile clay fingerprints.',
+      'claymation': 'Friendly handcrafted clay character with tactile surfaces, appealing proportions, and warm miniature studio lighting.',
       'cyberpunk': 'Cyberpunk graphic novel aesthetic, glowing neon cyan and magenta rim highlights, dark sci-fi backdrop, cybernetic details.',
       'vector-flat': 'Clean minimalist 2D vector flat illustration, modern Figma tech mascot style, sharp bezier curves, duotone brand palette.',
       'retro-90s': 'Saturday morning 1990s animated television cartoon style, playful rubber-hose proportions, warm CRT television nostalgic colors.',
@@ -574,99 +574,6 @@ async function handleSceneImageRequest(req: express.Request, res: express.Respon
 
 app.post('/api/generate-scene-image', handleSceneImageRequest);
 app.post('/api/regenerate-scene', handleSceneImageRequest);
-
-// AI Cartoon Script / Scene Generator for Toon Story Studio
-app.post('/api/generate-toon-story', async (req, res) => {
-  try {
-    const { topic, character = 'Ava', durationSeconds = 30 } = req.body;
-    const ai = getGenAI();
-
-    if (!ai) {
-      return res.json({
-        scenes: [
-          {
-            title: 'Introduction',
-            caption: `Hey there! Welcome to this animation about ${topic || 'our story'}!`,
-            character: character || 'Ava',
-            action: 'wave',
-            background: 'Studio purple',
-            transition: 'Fade',
-            duration: 6,
-          },
-          {
-            title: 'The Challenge',
-            caption: 'Things were looking tricky, but here is where things get interesting...',
-            character: character || 'Ava',
-            action: 'talk',
-            background: 'City park',
-            transition: 'Slide Left',
-            duration: 8,
-          },
-          {
-            title: 'Victory Moment',
-            caption: 'And just like that, we made it happen! Thank you for watching!',
-            character: character || 'Ava',
-            action: 'celebrate',
-            background: 'Sunset beach',
-            transition: 'Zoom Out',
-            duration: 6,
-          },
-        ],
-      });
-    }
-
-    const prompt = `Generate a sequence of cartoon animation scenes for a ${durationSeconds}s cartoon animation on the topic: "${topic}".
-Featured Character: ${character}.
-Available Actions: "idle", "walk", "jump", "talk", "wave", "celebrate", "sneak", "dance", "shock", "present".
-Available Backgrounds: "Studio purple", "City park", "Cozy office", "Neon arcade", "Sunset beach", "Tech lab".
-Available Transitions: "Fade", "Slide Left", "Slide Right", "Zoom In", "Zoom Out", "Wipe".
-
-Return a JSON array of scene objects with:
-- title: string
-- caption: string (dialogue or narration spoken by the character, 10-18 words)
-- character: string ("Ava", "Milo", "Nova", "Kai", "Luna", or "Max")
-- action: one of the available actions
-- background: one of the available backgrounds
-- transition: one of the available transitions
-- duration: number (seconds for this scene, sum should equal approximately ${durationSeconds}s)`;
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            scenes: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  title: { type: Type.STRING },
-                  caption: { type: Type.STRING },
-                  character: { type: Type.STRING },
-                  action: { type: Type.STRING },
-                  background: { type: Type.STRING },
-                  transition: { type: Type.STRING },
-                  duration: { type: Type.NUMBER },
-                },
-                required: ['title', 'caption', 'character', 'action', 'background', 'transition', 'duration'],
-              },
-            },
-          },
-          required: ['scenes'],
-        },
-      },
-    });
-
-    const parsed = JSON.parse(response.text || '{}');
-    res.json(parsed);
-  } catch (err: any) {
-    console.error('Error generating toon story:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
 
 const CARTOON_SCENE_STUDIO = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600"><defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%231a0b2e"/><stop offset="100%" stop-color="%230d0417"/></linearGradient></defs><rect width="800" height="600" fill="url(%23bg)"/><ellipse cx="400" cy="540" rx="360" ry="80" fill="%232e1065"/><polygon points="0,480 800,480 800,600 0,600" fill="%23120521"/><line x1="0" y1="480" x2="800" y2="480" stroke="%23ff9900" stroke-width="3" opacity="0.6"/><polygon points="180,120 185,135 200,140 185,145 180,160 175,145 160,140 175,135" fill="%23ffcc00"/><polygon points="620,100 624,112 636,116 624,120 620,132 616,120 604,116 616,112" fill="%2300f2fe"/></svg>`;
 

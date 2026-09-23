@@ -1,46 +1,30 @@
-# Design QA
+# Design QA — Integrated Toon AI Village rebuild
 
-- Source visual truth: `/workspace/scratch/56e3cdd2bed2/generated_images/exec-078ae315-c338-4bba-9042-86f62d422b74.png`
-- Intended viewport: 1440 × 1024 CSS pixels at device scale factor 1
-- Source pixels: 1536 × 1024
-- Implementation route: `http://terminal.local:4173/`, onboarding state
-- Browser-rendered implementation screenshot: unavailable
+## Visual target
 
-## Evidence
+- Approved dimensional Village direction: navy navigation, warm cinematic illustration,
+  cream workspace, coral/orange actions, rich scene imagery, and clear visual depth.
+- Primary journey: Village onboarding → Story Builder → Character Bible → Story Studio →
+  scene approval/regeneration → voice/captions → preview/export.
+- The former vector-rig/2D-script workflow is not part of the primary application.
 
-- TypeScript validation passed with `npm run lint`.
-- Production compilation passed with `npm run build`.
-- `sites-preview` reported healthy at the expected URL and port.
-- The cloud browser rejected the managed preview URL with `ERR_BLOCKED_BY_CLIENT`, including in a fresh tab, so a rendered screenshot could not be captured.
+## Verified
 
-## Interaction Coverage
+- [x] `npm run lint`
+- [x] `npm run build`
+- [x] Onboarding data contract preserves idea, URL, duration, creation type, and aspect ratio
+- [x] Character Bible fallback API returns identity prompt and guardrails
+- [x] Unified 30-second story fallback produces three complete scenes
+- [x] Scene regeneration fallback returns replacement artwork
+- [x] Disconnected `/api/generate-toon-story` 2D endpoint returns 404
+- [x] Story Studio shares the generated reel, Character Bible, approvals, and preview state
+- [x] Responsive desktop/tablet/mobile styles and reduced-motion behavior are present
 
-- Static/code inspection confirms controlled idea and URL inputs, five creation-type selectors, conditional how-to/pitch templates, 30/60/90-second selection, three aspect ratios, and a build action wired to the existing onboarding completion callback.
-- Browser interaction testing could not be completed because the managed preview was blocked before page load.
-- Console errors could not be checked because the page could not load in the cloud browser.
+## Browser limitation
 
-## Findings
+The managed browser previously rejected both `localhost` and `127.0.0.1` with
+`ERR_BLOCKED_BY_CLIENT`. The production bundle and API workflow are verified, but a final visual
+comparison at 1440 × 1024 and 390 × 844 must still be performed in a preview environment that can
+reach the app.
 
-- [P1] Browser-rendered design comparison unavailable
-  - Location: complete onboarding screen.
-  - Evidence: both source visual and compiled implementation exist, but the cloud browser blocks `terminal.local` before rendering.
-  - Impact: typography, image crop, responsive overflow, and exact visual fidelity cannot be certified.
-  - Fix: rerun desktop and mobile visual QA when the managed preview bridge accepts the local URL.
-
-## Comparison History
-
-- Initial pass: blocked before first visual comparison; no visual fixes claimed.
-
-## Implementation Checklist
-
-- Reopen the onboarding route at 1440 × 1024 and 390 × 844.
-- Test all five creation choices and the three conditional how-to/pitch options.
-- Test duration, format, idea, URL, and Build my story controls.
-- Compare full screen and focused form/hero regions with the selected source visual.
-- Check browser console and correct any P0/P1/P2 mismatch before merge.
-
-## Follow-up Polish
-
-- Evaluate whether the hero image needs a mobile-specific focal crop after browser capture.
-
-final result: blocked
+final result: blocked — functional/build verification passed; managed visual browser unavailable.
