@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type, Modality } from '@google/genai';
@@ -52,7 +53,13 @@ const ORIGINAL_STYLE_PROMPTS: Record<string, string> = {
 };
 
 function splitImageDataUrl(dataUrl?: string) {
-  if (!dataUrl || !dataUrl.startsWith('data:image/')) return null;
+  if (!dataUrl) return null;
+  if (dataUrl.startsWith('/village/')) {
+    const filename = path.basename(dataUrl);
+    const localPath = path.join(process.cwd(), 'public', 'village', filename);
+    if (fs.existsSync(localPath)) return { mimeType: filename.endsWith('.webp') ? 'image/webp' : 'image/png', data: fs.readFileSync(localPath).toString('base64') };
+  }
+  if (!dataUrl.startsWith('data:image/')) return null;
   const match = dataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
   return match ? { mimeType: match[1], data: match[2] } : null;
 }
@@ -586,15 +593,17 @@ const CARTOON_SCENE_SPACE = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.o
 const CARTOON_SCENE_VECTOR = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600"><rect width="800" height="600" fill="%231e1b4b"/><rect x="80" y="120" width="220" height="150" rx="16" fill="%231e293b" stroke="%236366f1" stroke-width="3"/><line x1="110" y1="160" x2="260" y2="160" stroke="%2338bdf8" stroke-width="6" stroke-linecap="round"/><ellipse cx="400" cy="500" rx="220" ry="40" fill="%236366f1"/></svg>`;
 
 function getCuratedSceneImages(style: string): string[] {
-  const pools: Record<string, string[]> = {
-    'pixar-3d': [CARTOON_SCENE_STUDIO, CARTOON_SCENE_RPG, CARTOON_SCENE_SPACE, CARTOON_SCENE_CYBER],
-    'anime-manga': [CARTOON_SCENE_RPG, CARTOON_SCENE_STUDIO, CARTOON_SCENE_CYBER, CARTOON_SCENE_SPACE],
-    'comic-popart': [CARTOON_SCENE_CYBER, CARTOON_SCENE_STUDIO, CARTOON_SCENE_RPG, CARTOON_SCENE_SPACE],
-    'cyberpunk': [CARTOON_SCENE_CYBER, CARTOON_SCENE_SPACE, CARTOON_SCENE_STUDIO, CARTOON_SCENE_RPG],
-    'vector-flat': [CARTOON_SCENE_VECTOR, CARTOON_SCENE_STUDIO, CARTOON_SCENE_SPACE, CARTOON_SCENE_CYBER],
-  };
-
-  return pools[style] || pools['pixar-3d'];
+  // The no-key demo uses the same original dimensional artwork as the live UI.
+  // This keeps every workflow visually complete instead of falling back to flat SVG blocks.
+  const worlds = [
+    '/village/world-shop.webp',
+    '/village/world-app.webp',
+    '/village/world-podcast.webp',
+    '/village/world-stage.webp',
+    '/village/story-village-hero.webp',
+  ];
+  const offset = ['claymation', 'comic-popart', 'vector-flat'].indexOf(style);
+  return offset < 0 ? worlds : [...worlds.slice(offset), ...worlds.slice(0, offset)];
 }
 
 function generateFallbackScenes(duration: number, appName: string, appDesc: string, style: string) {
